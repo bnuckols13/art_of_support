@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Art of Support - Interactive Learning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 50%, #6c5ce7 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 300;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .progress-container {
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00b894, #00cec9);
+            width: 0%;
+            transition: width 0.8s ease;
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: white;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        .module {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .module.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .module-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .module-title {
+            font-size: 2rem;
+            color: #2d3436;
+            margin-bottom: 0.5rem;
+        }
+
+        .module-subtitle {
+            color: #636e72;
+            font-size: 1.1rem;
+        }
+
+        .concept-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .concept-card {
+            background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .concept-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .concept-card.revealed {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+        }
+
+        .concept-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .concept-content {
+            display: none;
+            line-height: 1.6;
+        }
+
+        .concept-card.revealed .concept-content {
+            display: block;
+        }
+
+        .scenario-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .scenario {
+            margin-bottom: 2rem;
+        }
+
+        .scenario-title {
+            font-size: 1.4rem;
+            color: #2d3436;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .scenario-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #fdcb6e, #e17055);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .scenario-text {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #74b9ff;
+            font-style: italic;
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .choice {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .choice:hover {
+            border-color: #74b9ff;
+            transform: translateY(-2px);
+        }
+
+        .choice.correct {
+            border-color: #00b894;
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            color: white;
+        }
+
+        .choice.incorrect {
+            border-color: #e17055;
+            background: #fab1a0;
+            color: white;
+        }
+
+        .choice-feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .choice.correct .choice-feedback {
+            display: block;
+            background: rgba(0, 184, 148, 0.1);
+            border: 1px solid #00b894;
+            color: #2d3436;
+        }
+
+        .choice.incorrect .choice-feedback {
+            display: block;
+            background: rgba(225, 112, 85, 0.1);
+            border: 1px solid #e17055;
+            color: #2d3436;
+        }
+
+        .support-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .support-type {
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .support-type:hover {
+            transform: scale(1.05);
+        }
+
+        .support-type.active {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+        }
+
+        .support-type-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .support-details {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .support-details.active {
+            display: block;
+            animation: fadeInUp 0.4s ease;
+        }
+
+        .reflection-section {
+            background: linear-gradient(135deg, #fd79a8, #fdcb6e);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .reflection-prompt {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .reflection-input {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #636e72, #2d3436);
+        }
+
+        .navigation {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .quiz-result {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+            display: none;
+        }
+
+        .quiz-result.show {
+            display: block;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .quiz-result.excellent {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            color: white;
+        }
+
+        .quiz-result.good {
+            background: linear-gradient(135deg, #fdcb6e, #e17055);
+            color: white;
+        }
+
+        .emoji {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .interactive-demo {
+            background: #f1f2f6;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .demo-chat {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            max-width: 400px;
+        }
+
+        .demo-chat.friend {
+            margin-left: auto;
+            background: #74b9ff;
+            color: white;
+        }
+
+        .demo-chat.you {
+            background: #ddd;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">The Art of Support</h1>
+            <p class="subtitle">Holding Space vs. Fixing - An Interactive Journey</p>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Module 1 of 5</div>
+        </div>
+
+        <!-- Module 1: Introduction & Core Concepts -->
+        <div class="module active" id="module1">
+            <div class="module-header">
+                <h2 class="module-title">🤝 Understanding Support</h2>
+                <p class="module-subtitle">Click each card to discover key insights about giving support</p>
+            </div>
+
+            <div class="concept-cards">
+                <div class="concept-card" onclick="revealConcept(this)">
+                    <h3 class="concept-title">💬 Perfect Words Myth</h3>
+                    <div class="concept-content">
+                        Support isn't about having the perfect words or solutions. Often, the most powerful support comes from simply being present and acknowledging someone's experience. "I see you" can be more healing than "Here's what you should do."
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="revealConcept(this)">
+                    <h3 class="concept-title">🧘 Presence Over Advice</h3>
+                    <div class="concept-content">
+                        Sometimes presence is more powerful than advice. Sitting with someone in their pain, offering your calm energy, and simply listening can provide more comfort than trying to solve their problems.
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="revealConcept(this)">
+                    <h3 class="concept-title">🎯 Different Support Types</h3>
+                    <div class="concept-content">
+                        People need different types of support: emotional (listening, validation), informational (practical help, resources), or appraisal (gentle challenge, perspective). The key is asking what they need.
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="revealConcept(this)">
+                    <h3 class="concept-title">💪 Receiving is a Skill</h3>
+                    <div class="concept-content">
+                        Receiving support takes courage and practice. It means being vulnerable, letting others see our struggles, and trusting that we're worthy of care. This is just as important as learning to give support.
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="btn" onclick="nextModule()">Continue to Scenarios →</button>
+            </div>
+        </div>
+
+        <!-- Module 2: Real-World Scenarios -->
+        <div class="module" id="module2">
+            <div class="module-header">
+                <h2 class="module-title">🎭 Real-World Scenarios</h2>
+                <p class="module-subtitle">Choose the most supportive response</p>
+            </div>
+
+            <div class="scenario-container">
+                <div class="scenario">
+                    <div class="scenario-title">
+                        <div class="scenario-icon">😰</div>
+                        Scenario 1: Your friend is overwhelmed
+                    </div>
+                    <div class="scenario-text">
+                        "I'm feeling so overwhelmed with everything. I can't seem to get anything right, and I feel like I'm falling behind everyone else."
+                    </div>
+                    <div class="choices">
+                        <div class="choice" onclick="selectChoice(this, false)">
+                            "You just need to organize your time better. Have you tried making a schedule?"
+                            <div class="choice-feedback">
+                                This jumps straight to problem-solving without acknowledging their feelings. While practical, it might make them feel unheard.
+                            </div>
+                        </div>
+                        <div class="choice" onclick="selectChoice(this, true)">
+                            "That sounds really hard. I can hear how much you're struggling right now. What feels most overwhelming?"
+                            <div class="choice-feedback">
+                                Perfect! This acknowledges their feelings, shows you're listening, and invites them to share more without immediately trying to fix things.
+                            </div>
+                        </div>
+                        <div class="choice" onclick="selectChoice(this, false)">
+                            "Everyone feels that way sometimes. You'll get through it!"
+                            <div class="choice-feedback">
+                                While well-intentioned, this minimizes their experience and offers false reassurance without really connecting with their struggle.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="btn secondary" onclick="previousModule()">← Back</button>
+                <button class="btn" onclick="nextModule()">Continue to Support Types →</button>
+            </div>
+        </div>
+
+        <!-- Module 3: Types of Support -->
+        <div class="module" id="module3">
+            <div class="module-header">
+                <h2 class="module-title">🌈 Types of Support</h2>
+                <p class="module-subtitle">Explore different ways to offer support</p>
+            </div>
+
+            <div class="support-types">
+                <div class="support-type" onclick="showSupportType(this, 'listening')">
+                    <div class="support-type-title">👂 Listening</div>
+                    <div>Being fully present</div>
+                </div>
+                <div class="support-type" onclick="showSupportType(this, 'validation')">
+                    <div class="support-type-title">✅ Validation</div>
+                    <div>Affirming their feelings</div>
+                </div>
+                <div class="support-type" onclick="showSupportType(this, 'practical')">
+                    <div class="support-type-title">🛠️ Practical Help</div>
+                    <div>Offering concrete assistance</div>
+                </div>
+                <div class="support-type" onclick="showSupportType(this, 'challenge')">
+                    <div class="support-type-title">🎯 Gentle Challenge</div>
+                    <div>Offering new perspectives</div>
+                </div>
+            </div>
+
+            <div class="support-details" id="listening">
+                <h3>👂 Listening Support</h3>
+                <p><strong>What it looks like:</strong> Giving your full attention, reflecting what you hear, asking open questions.</p>
+                <p><strong>When to use:</strong> When someone needs to process emotions or feel heard.</p>
+                <p><strong>Example:</strong> "Tell me more about that... It sounds like you're feeling really frustrated about the situation."</p>
+            </div>
+
+            <div class="support-details" id="validation">
+                <h3>✅ Validation Support</h3>
+                <p><strong>What it looks like:</strong> Acknowledging their feelings as valid and understandable.</p>
+                <p><strong>When to use:</strong> When someone is doubting themselves or feeling shame.</p>
+                <p><strong>Example:</strong> "Your feelings make complete sense given what you're going through. Anyone would feel overwhelmed in this situation."</p>
+            </div>
+
+            <div class="support-details" id="practical">
+                <h3>🛠️ Practical Help</h3>
+                <p><strong>What it looks like:</strong> Offering specific, concrete assistance or resources.</p>
+                <p><strong>When to use:</strong> When someone has identified a specific need or problem to solve.</p>
+                <p><strong>Example:</strong> "Would it help if I researched some therapists in your area?" or "I can bring dinner over this week."</p>
+            </div>
+
+            <div class="support-details" id="challenge">
+                <h3>🎯 Gentle Challenge</h3>
+                <p><strong>What it looks like:</strong> Offering a different perspective with care and timing.</p>
+                <p><strong>When to use:</strong> When someone is stuck in negative patterns and open to feedback.</p>
+                <p><strong>Example:</strong> "I hear you saying you always mess up, but I'm remembering how well you handled the situation last month..."</p>
+            </div>
+
+            <div class="navigation">
+                <button class="btn secondary" onclick="previousModule()">← Back</button>
+                <button class="btn" onclick="nextModule()">Continue to Practice →</button>
+            </div>
+        </div>
+
+        <!-- Module 4: Interactive Demo -->
+        <div class="module" id="module4">
+            <div class="module-header">
+                <h2 class="module-title">💬 Practice Conversation</h2>
+                <p class="module-subtitle">See how different responses change the conversation</p>
+            </div>
+
+            <div class="interactive-demo">
+                <div class="demo-chat friend">
+                    "I keep messing things up in recovery. I had a really hard day yesterday and I feel like I'm back to square one."
+                </div>
+
+                <div id="demoResponse" class="demo-chat you hidden">
+                    <!-- Response will be filled by JavaScript -->
+                </div>
+
+                <div id="demoFollow" class="demo-chat friend hidden">
+                    <!-- Follow-up will be filled by JavaScript -->
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <h4>Choose your response:</h4>
+                    <div class="choices">
+                        <div class="choice" onclick="showDemoResponse('fixing')">
+                            "You need to focus on your coping strategies and stick to your routine better."
+                        </div>
+                        <div class="choice" onclick="showDemoResponse('supporting')">
+                            "Recovery isn't linear. One hard day doesn't erase your progress. What made yesterday particularly difficult?"
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button class="btn secondary" onclick="previousModule()">← Back</button>
+                <button class="btn" onclick="nextModule()">Continue to Reflection →</button>
+            </div>
+        </div>
+
+        <!-- Module 5: Reflection -->
+        <div class="module" id="module5">
+            <div class="module-header">
+                <h2 class="module-title">🎯 Personal Reflection</h2>
+                <p class="module-subtitle">Apply these insights to your own life</p>
+            </div>
+
+            <div class="reflection-section">
+                <div class="reflection-prompt">
+                    Think of a time when someone supported you in a way that really helped. What did they do that made it effective?
+                </div>
+                <textarea class="reflection-input" placeholder="Share your thoughts here..."></textarea>
+            </div>
+
+            <div class="reflection-section">
+                <div class="reflection-prompt">
+                    What's one way you'd like to practice giving support differently after this lesson?
+                </div>
+                <textarea class="reflection-input" placeholder="Your intention for practicing support..."></textarea>
+            </div>
+
+            <div class="reflection-section">
+                <div class="reflection-prompt">
+                    What makes it challenging for you to receive support? How might you practice being more open to it?
+                </div>
+                <textarea class="reflection-input" placeholder="Your thoughts on receiving support..."></textarea>
+            </div>
+
+            <div class="quiz-result excellent show">
+                <div class="emoji">🌟</div>
+                <h3>Congratulations!</h3>
+                <p>You've completed "The Art of Support" learning experience. You now have practical tools for both giving and receiving support in recovery and beyond.</p>
+                <p><strong>Remember:</strong> Support is about presence, not perfection. Practice holding space for others and yourself with compassion.</p>
+            </div>
+
+            <div class="navigation">
+                <button class="btn secondary" onclick="previousModule()">← Back</button>
+                <button class="btn" onclick="resetLearning()">Start Over</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentModule = 1;
+        const totalModules = 5;
+        let conceptsRevealed = 0;
+        let scenarioAnswered = false;
+
+        function updateProgress() {
+            const progress = (currentModule / totalModules) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `Module ${currentModule} of ${totalModules}`;
+        }
+
+        function nextModule() {
+            if (currentModule < totalModules) {
+                document.getElementById(`module${currentModule}`).classList.remove('active');
+                currentModule++;
+                document.getElementById(`module${currentModule}`).classList.add('active');
+                updateProgress();
+                
+                // Reset demo when entering module 4
+                if (currentModule === 4) {
+                    resetDemo();
+                }
+            }
+        }
+
+        function previousModule() {
+            if (currentModule > 1) {
+                document.getElementById(`module${currentModule}`).classList.remove('active');
+                currentModule--;
+                document.getElementById(`module${currentModule}`).classList.add('active');
+                updateProgress();
+            }
+        }
+
+        function revealConcept(card) {
+            if (!card.classList.contains('revealed')) {
+                card.classList.add('revealed');
+                conceptsRevealed++;
+                
+                // Add a little celebration effect
+                card.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    card.style.transform = 'scale(1)';
+                }, 200);
+            }
+        }
+
+        function selectChoice(choice, isCorrect) {
+            // Disable all choices in this scenario
+            const allChoices = choice.parentElement.querySelectorAll('.choice');
+            allChoices.forEach(c => {
+                c.style.pointerEvents = 'none';
+                if (c === choice) {
+                    c.classList.add(isCorrect ? 'correct' : 'incorrect');
+                } else {
+                    c.style.opacity = '0.5';
+                }
+            });
+            scenarioAnswered = true;
+        }
+
+        function showSupportType(element, type) {
+            // Remove active class from all support types
+            document.querySelectorAll('.support-type').forEach(st => st.classList.remove('active'));
+            document.querySelectorAll('.support-details').forEach(sd => sd.classList.remove('active'));
+            
+            // Add active class to selected
+            element.classList.add('active');
+            document.getElementById(type).classList.add('active');
+        }
+
+        function showDemoResponse(type) {
+            const responseDiv = document.getElementById('demoResponse');
+            const followDiv = document.getElementById('demoFollow');
+            
+            if (type === 'fixing') {
+                responseDiv.textContent = "You need to focus on your coping strategies and stick to your routine better.";
+                followDiv.textContent = "I guess... but it's just so hard. I feel like you don't understand how overwhelming it gets.";
+                responseDiv.style.background = '#fab1a0';
+            } else {
+                responseDiv.textContent = "Recovery isn't linear. One hard day doesn't erase your progress. What made yesterday particularly difficult?";
+                followDiv.textContent = "Thank you for saying that. I was triggered by a family conversation and felt so alone. It helps to remember that setbacks don't mean I'm failing.";
+                responseDiv.style.background = '#81ecec';
+            }
+            
+            responseDiv.classList.remove('hidden');
+            setTimeout(() => {
+                followDiv.classList.remove('hidden');
+            }, 1500);
+            
+            // Disable choices
+            document.querySelectorAll('#module4 .choice').forEach(c => {
+                c.style.pointerEvents = 'none';
+                c.style.opacity = '0.7';
+            });
+        }
+
+        function resetDemo() {
+            document.getElementById('demoResponse').classList.add('hidden');
+            document.getElementById('demoFollow').classList.add('hidden');
+            document.querySelectorAll('#module4 .choice').forEach(c => {
+                c.style.pointerEvents = 'auto';
+                c.style.opacity = '1';
+            });
+        }
+
+        function resetLearning() {
+            currentModule = 1;
+            conceptsRevealed = 0;
+            scenarioAnswered = false;
+            
+            // Hide all modules
+            document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+            document.getElementById('module1').classList.add('active');
+            
+            // Reset all interactive elements
+            document.querySelectorAll('.concept-card').forEach(c => c.classList.remove('revealed'));
+            document.querySelectorAll('.choice').forEach(c => {
+                c.classList.remove('correct', 'incorrect');
+                c.style.pointerEvents = 'auto';
+                c.style.opacity = '1';
+            });
+            document.querySelectorAll('.support-type').forEach(st => st.classList.remove('active'));
+            document.querySelectorAll('.support-details').forEach(sd => sd.classList.remove('active'));
+            document.querySelectorAll('.reflection-input').forEach(input => input.value = '');
+            
+            resetDemo();
+            updateProgress();
+        }
+
+        // Initialize
+        updateProgress();
+    </script>
+</body>
+</html>
